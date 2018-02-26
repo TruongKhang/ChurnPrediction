@@ -15,11 +15,11 @@ def create_placeholders(n_x, n_y):
     return X, Y
     
 def initialize_parameters(layers):
-    W1 = tf.get_variable("W1", [layers[1], layers[0]], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b1 = tf.get_variable("b1", [layers[1], 1], initializer=tf.zeros_initializer)
+    W1 = tf.get_variable("W1", [layers[1], layers[0]], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b1 = tf.get_variable("b1", [layers[1], 1], dtype=tf.float32, initializer=tf.zeros_initializer)
     
-    W2 = tf.get_variable("W2", [layers[2], layers[1]], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b2 = tf.get_variable("b2", [layers[2], 1], initializer=tf.zeros_initializer)
+    W2 = tf.get_variable("W2", [layers[2], layers[1]], dtype=tf.float32, initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b2 = tf.get_variable("b2", [layers[2], 1], dtype=tf.float32, initializer=tf.zeros_initializer)
     
     parameters = {"W1": W1, "b1": b1, "W2": W2, "b2": b2}
     
@@ -31,9 +31,9 @@ def forward_propagation(X, parameters):
     W2 = parameters["W2"]
     b2 = parameters["b2"]
     
-    Z1 = tf.matmul(W1, X) + b1
+    Z1 = tf.add(tf.matmul(W1, X), b1)
     A1 = tf.nn.relu(Z1)
-    Z2 = tf.matmul(W2, A1) + b2
+    Z2 = tf.add(tf.matmul(W2, A1), b2)
     
     return Z2
     
@@ -44,7 +44,7 @@ def compute_cost(Z2, Y):
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels, logits=logits))
     return cost
     
-def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.001, num_epochs=100, minibatch_size=32, print_cost=False):
+def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.0001, num_epochs=1000, minibatch_size=32, print_cost=False):
     ops.reset_default_graph()
     tf.set_random_seed(1)
     seed = 3
@@ -57,7 +57,7 @@ def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.001, num_epo
     Z = forward_propagation(X_train, parameters)
     cost = compute_cost(Z, Y_train)
     
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
     
     init = tf.global_variables_initializer()
     
@@ -76,10 +76,10 @@ def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.001, num_epo
                 
                 epoch_cost += minibatch_cost / num_minibatches
                 
-            if print_cost == True and epoch % 100 == 0:
+            if print_cost == True and epoch % 10 == 0:
                 print ("Cost after epoch %i: %f" %(epoch, epoch_cost))
                 
         parameters = sess.run(parameters)
         print("Parameters have been trained!")
         
-        return parameters
+    return parameters

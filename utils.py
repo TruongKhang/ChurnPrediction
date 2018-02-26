@@ -35,24 +35,24 @@ def random_mini_batches(X, Y, minibatch_size, seed):
     
 def load_dataset():
     df = pd.read_csv('churnTrain.csv')
-    df = df.drop(columns=['State', 'Phone_No'])
+    df = df.drop(['State', 'Phone_No'], axis=1)
     df['International_Plan'] = df['International_Plan'].str.strip().map({'yes': 1, 'no': 0})
     df['Voice_Mail_Plan'] = df['Voice_Mail_Plan'].str.strip().map({'yes': 1, 'no': 0})
     df['Customer_Left'] = df['Customer_Left'].map({True: 1, False: 0})
-    dataTrain = df.values
-    X_train = dataTrain[:, 0:19]
-    Y_train = dataTrain[:, 19]
+    dataTrain = np.array(df.values, dtype="float32")
+    X_train = dataTrain[:, 0:18]
+    Y_train = dataTrain[:, 18]
 
     df = pd.read_csv('churnTest.csv')
-    df = df.drop(columns=['State', 'Phone_No'])
+    df = df.drop(['State', 'Phone_No'], axis=1)
     df['International_Plan'] = df['International_Plan'].str.strip().map({'yes': 1, 'no': 0})
     df['Voice_Mail_Plan'] = df['Voice_Mail_Plan'].str.strip().map({'yes': 1, 'no': 0})
     df['Customer_Left'] = df['Customer_Left'].map({True: 1, False: 0})
-    dataTest = df.values
-    X_test = dataTest[:, 0:19]
-    Y_test = dataTest[:, 19]
+    dataTest = np.array(df.values, dtype="float32")
+    X_test = dataTest[:, 0:18]
+    Y_test = dataTest[:, 18]
 
-    return X_train.T, Y_train.T, X_test.T, Y_test.T    
+    return X_train, Y_train, X_test, Y_test    
     
     
 if __name__ == '__main__':

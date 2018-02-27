@@ -7,10 +7,20 @@ Created on Mon Feb 26 01:45:32 2018
 
 import tensorflow as tf
 from utils import load_dataset
-from model import model
+from model import neural_network, SVM, random_forest
 
 def run():
     X_train, Y_train, X_test, Y_test = load_dataset()
+    
+    print ("SVM model...")
+    SVM(X_train, Y_train, X_test, Y_test)
+    print ("Done SVM")
+    
+    print ("Random forest model...")
+    random_forest(X_train, Y_train, X_test, Y_test)
+    print ("Done random forest")
+    
+    print ("Neural network model...")
     
     C = tf.constant(2, name='C')
     one_hot_matrix_train = tf.one_hot(Y_train, C, axis=0)
@@ -24,7 +34,8 @@ def run():
     X_train = X_train.T
     X_test = X_test.T
     
-    weights = model(X_train, Y_train, X_test, Y_test, [18,3,2], print_cost=True)
+    weights = neural_network(X_train, Y_train, X_test, Y_test, [18,8,2], print_cost=True)
+        
     return weights
     
 if __name__ == '__main__':

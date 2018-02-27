@@ -6,8 +6,11 @@ Created on Sun Feb 25 22:18:14 2018
 """
 
 import tensorflow as tf
+import numpy as np
 from tensorflow.python.framework import ops
 from utils import random_mini_batches
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
 
 def create_placeholders(n_x, n_y):
     X = tf.placeholder(tf.float32, shape=[n_x, None])
@@ -44,7 +47,7 @@ def compute_cost(Z2, Y):
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=labels, logits=logits))
     return cost
     
-def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.0001, num_epochs=1000, minibatch_size=32, print_cost=False):
+def neural_network(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.0001, num_epochs=1000, minibatch_size=32, print_cost=False):
     ops.reset_default_graph()
     tf.set_random_seed(1)
     seed = 3
@@ -54,8 +57,8 @@ def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.0001, num_ep
     
     X, Y = create_placeholders(n_x, n_y)
     parameters = initialize_parameters(layers)
-    Z = forward_propagation(X_train, parameters)
-    cost = compute_cost(Z, Y_train)
+    Z = forward_propagation(X, parameters)
+    cost = compute_cost(Z, Y)
     
     optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
     
@@ -76,10 +79,43 @@ def model(X_train, Y_train, X_test, Y_test, layers, learning_rate=0.0001, num_ep
                 
                 epoch_cost += minibatch_cost / num_minibatches
                 
-            if print_cost == True and epoch % 10 == 0:
+            if print_cost == True and epoch % 100 == 0:
                 print ("Cost after epoch %i: %f" %(epoch, epoch_cost))
                 
         parameters = sess.run(parameters)
+        
+        correct_prediction = tf.equal(tf.argmax(Z, axis=0), tf.argmax(Y, axis=0))
+        # Calculate accuracy on the test set
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+        print("Train Accuracy:", accuracy.eval({X: X_train, Y: Y_train}))
+        print("Test Accuracy:", accuracy.eval({X: X_test, Y: Y_test}))
+        
         print("Parameters have been trained!")
         
     return parameters
+    
+def SVM(X_train, Y_train, X_test, Y_test):
+    classifier = svm.SVC()
+    classifier.fit(X_train, Y_train)
+    
+    Y_predicted = classifier.predict(X_test)
+    correct_prediction = np.array(Y_test == Y_predicted, dtype=float)
+    accuracy = np.mean(correct_prediction)
+    
+    print ("Test Accuracy: ", accuracy)
+    
+def random_forest(X_train, Y_train, X_test, Y_test):
+    classifier = RandomForestClassifier(max_depth=10, random_state=0)
+    classifier.fit(X_train, Y_train)
+    
+    print ("Features important!")
+    print (classifier.feature_importances_)
+    
+    Y_predicted = classifier.predict(X_test)
+    correct_prediction = np.array(Y_test == Y_predicted, dtype=float)
+    accuracy = np.mean(correct_prediction)
+    
+    print ("Test Accuracy: ", accuracy)
+    
+    
